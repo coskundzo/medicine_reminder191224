@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'medicine.dart';
-import 'database_helper.dart';
+import 'db/medicine.dart'; // Medicine modelini import ettiniz
+import 'database_helper.dart'; // Veritabanı işlemleri için
 
 class MedicineListScreen extends StatefulWidget {
   @override

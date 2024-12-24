@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'db/medicine.dart';
+import 'database_helper.dart';
 
 class AddMedicineScreen extends StatefulWidget {
   @override
@@ -11,6 +13,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   final TextEditingController _dosageController = TextEditingController();
   DateTime? _startDate;
   TimeOfDay? _time;
+  int _frequency = 1; // Varsayılan günlük alınma sayısı
 
   @override
   Widget build(BuildContext context) {
@@ -66,13 +69,52 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 },
                 child: Text('Zamanı Seç'),
               ),
+              DropdownButtonFormField<int>(
+                value: _frequency,
+                decoration: InputDecoration(labelText: 'Günlük Alım Sayısı'),
+                items: List.generate(5, (index) => index + 1)
+                    .map((value) => DropdownMenuItem(
+                          value: value,
+                          child: Text('$value kez'),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _frequency = value;
+                    });
+                  }
+                },
+              ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    // İlaç bilgilerini kaydet
+                    final medicine = Medicine(
+                      name: _nameController.text,
+                      dosage: _dosageController.text,
+                      startDate: _startDate!,
+                      time: _time!,
+                      frequency: _frequency,
+                    );
+
+                    await DatabaseHelper.instance.insertMedicine(medicine);
+
+                    // Başarı mesajı
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('İlaç kaydedildi!')),
+                    );
+
+                    Navigator.pop(context);
                   }
                 },
                 child: Text('Kaydet'),
+              ),
+              // İlaç Listesi Butonu
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/medicines');
+                },
+                child: Text('İlaç Listesine Git'),
               ),
             ],
           ),
