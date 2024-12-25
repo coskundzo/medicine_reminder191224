@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'medicine.dart';
+import 'db/medicine.dart';
 import 'database_helper.dart';
 
 class MedicineListScreen extends StatefulWidget {
