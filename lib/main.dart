@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:medicine_reminder191224/database_helper.dart';
-import 'package:medicine_reminder191224/db/medicine.dart';
-import 'add_medicine_screen.dart';
+
 import 'medicine_list_screen.dart';
+import 'add_medicine_screen.dart';
+
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 
@@ -81,6 +81,12 @@ class HomeScreen extends StatelessWidget {
               },
               child: Text('İlaç Listesine Git'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/_medicines');
+              },
+              child: Text('İlaç Listesine Git/detay'),
+            ),
           ],
         ),
       ),
@@ -97,46 +103,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => HomeScreen(),
         '/addMedicine': (context) => AddMedicineScreen(),
-        '/medicines': (context) => MedicineListScreen(), // Yeni rota tanımlama
+        '/medicines': (context) => MedicineListScreen(),
+        '/_medicines': (context) => MedicineListScreen(), // Yeni rota tanımlama
       },
-    );
-  }
-}
-
-class MedicineListScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Medicine List'),
-      ),
-      body: FutureBuilder<List<Medicine>>(
-        future: DatabaseHelper.instance.getMedicines(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            final medicines = snapshot.data!;
-            return ListView.builder(
-              itemCount: medicines.length,
-              itemBuilder: (context, index) {
-                final medicine = medicines[index];
-                return ListTile(
-                  title: Text(medicine.name),
-                  subtitle: Text(medicine.dosage),
-                  onTap: () {
-                    // Medicien detayına gitmek için gerekli işlemler
-                  },
-                );
-              },
-            );
-          } else {
-            return Center(child: Text('No medicines found.'));
-          }
-        },
-      ),
     );
   }
 }
