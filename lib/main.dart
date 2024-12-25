@@ -22,6 +22,7 @@ void initializeNotifications() {
   flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
+// eklendi
 Future<void> scheduleNotification(
     String title, String body, DateTime time) async {
   await flutterLocalNotificationsPlugin.zonedSchedule(
