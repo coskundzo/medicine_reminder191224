@@ -52,8 +52,14 @@ Future<void> scheduleNotification(
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Asenkron işlemler için gerekli
-  initializeNotifications(); // Bildirimleri başlat
+  WidgetsFlutterBinding.ensureInitialized();
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  const androidInitSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initSettings = InitializationSettings(android: androidInitSettings);
+
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+
   runApp(MyApp());
 }
 

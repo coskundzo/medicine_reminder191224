@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'db/medicine.dart';
 import 'database_helper.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class AddMedicineScreen extends StatefulWidget {
   @override
@@ -14,6 +17,45 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   DateTime? _startDate;
   TimeOfDay? _time;
   int _frequency = 1; // Varsayılan günlük alınma sayısı
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  @override
+  void initState() {
+    super.initState();
+    tz.initializeTimeZones(); // Zaman dilimini başlat
+  }
+
+  Future<void> scheduleNotification(
+      String title, String body, DateTime scheduledTime) async {
+    const androidDetails = AndroidNotificationDetails(
+      'med_reminder_channel_id',
+      'Med Reminders',
+      channelDescription: 'Channel for medication reminders',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+    const platformDetails = NotificationDetails(android: androidDetails);
+
+    final tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
+    final notificationId =
+        DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+    var androidScheduleMode = null;
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      notificationId,
+      title,
+      body,
+      tzScheduledTime,
+      platformDetails,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+      androidScheduleMode: androidScheduleMode,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +95,10 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     });
                   }
                 },
-                child: Text('Başlangıç Tarihini Seç'),
+                child: Text(_startDate == null
+                    ? 'Başlangıç Tarihini Seç'
+                    : 'Başlangıç Tarihi: ${_startDate!.toLocal()}'
+                        .split(' ')[0]),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -67,28 +112,72 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     });
                   }
                 },
-                child: Text('Zamanı Seç'),
+                child: Text(_time == null
+                    ? 'Zamanı Seç'
+                    : 'Zaman: ${_time!.format(context)}'),
               ),
-              DropdownButtonFormField<int>(
-                value: _frequency,
-                decoration: InputDecoration(labelText: 'Günlük Alım Sayısı'),
-                items: List.generate(5, (index) => index + 1)
-                    .map((value) => DropdownMenuItem(
-                          value: value,
-                          child: Text('$value kez'),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _frequency = value;
-                    });
-                  }
-                },
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    iconSize: 30, // İkonun boyutunu artırdık
+                    icon: Icon(Icons.remove,
+                        size: 30), // İkonun boyutunu artırdık
+                    onPressed: () {
+                      if (_frequency > 1) {
+                        setState(() {
+                          _frequency--;
+                        });
+                      }
+                    },
+                  ),
+                  SizedBox(width: 8), // Araya boşluk ekledik
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Günlük Alım Sayısı', // Başlık yazısını ekledik
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '$_frequency', // Sayı yazısı
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight:
+                                FontWeight.bold), // Sayının stilini ayarladık
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: 8), // Araya boşluk ekledik
+                  IconButton(
+                    iconSize: 30, // İkonun boyutunu artırdık
+                    icon: Icon(Icons.add, size: 30), // İkonun boyutunu artırdık
+                    onPressed: () {
+                      setState(() {
+                        _frequency++;
+                      });
+                    },
+                  ),
+                ],
               ),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
+                    if (_startDate == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Lütfen başlangıç tarihi seçin.')),
+                      );
+                      return;
+                    }
+                    if (_time == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Lütfen zamanı seçin.')),
+                      );
+                      return;
+                    }
+
                     final medicine = Medicine(
                       name: _nameController.text,
                       dosage: _dosageController.text,
@@ -99,7 +188,6 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
 
                     await DatabaseHelper.instance.insertMedicine(medicine);
 
-                    // Başarı mesajı
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('İlaç kaydedildi!')),
                     );
@@ -109,7 +197,6 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 },
                 child: Text('Kaydet'),
               ),
-              // İlaç Listesi Butonu
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, '/medicines');

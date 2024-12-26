@@ -96,6 +96,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                               );
                             },
                           );
+
                           if (confirm == true) {
                             await _deleteMedicine(index);
                           }
