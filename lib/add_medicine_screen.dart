@@ -23,7 +23,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
         key: _formKey,
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Column(
+          child: ListView(
             children: [
               TextFormField(
                 controller: _nameController,
@@ -35,10 +35,12 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: 16.0),
               TextFormField(
                 controller: _dosageController,
                 decoration: InputDecoration(labelText: 'Dozaj'),
               ),
+              SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () async {
                   final pickedDate = await showDatePicker(
@@ -55,6 +57,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 },
                 child: Text('Başlangıç Tarihini Seç'),
               ),
+              SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () async {
                   final pickedTime = await showTimePicker(
@@ -69,26 +72,60 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 },
                 child: Text('Zamanı Seç'),
               ),
-              DropdownButtonFormField<int>(
-                value: _frequency,
-                decoration: InputDecoration(labelText: 'Günlük Alım Sayısı'),
-                items: List.generate(5, (index) => index + 1)
-                    .map((value) => DropdownMenuItem(
-                          value: value,
-                          child: Text('$value kez'),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _frequency = value;
-                    });
-                  }
-                },
+              SizedBox(height: 16.0),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Günde kaç kez alacaksınız?",
+                    style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.remove),
+                        onPressed: () {
+                          setState(() {
+                            if (_frequency > 1) {
+                              _frequency--;
+                            }
+                          });
+                        },
+                      ),
+                      Text(
+                        '$_frequency kez',
+                        style: TextStyle(fontSize: 16.0),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: () {
+                          setState(() {
+                            if (_frequency < 5) {
+                              _frequency++;
+                            }
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
+              SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
+                    if (_startDate == null || _time == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Tarih ve zaman seçmek zorunludur!')),
+                      );
+                      return;
+                    }
+
                     final medicine = Medicine(
                       name: _nameController.text,
                       dosage: _dosageController.text,
@@ -99,7 +136,6 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
 
                     await DatabaseHelper.instance.insertMedicine(medicine);
 
-                    // Başarı mesajı
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('İlaç kaydedildi!')),
                     );
@@ -109,7 +145,6 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 },
                 child: Text('Kaydet'),
               ),
-              // İlaç Listesi Butonu
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, '/medicines');
