@@ -16,7 +16,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   final TextEditingController _dosageController = TextEditingController();
   DateTime? _startDate;
   TimeOfDay? _time;
-  int _frequency = 1; // Varsayılan günlük alınma sayısı
+  int _frequency = 1;
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -24,7 +24,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   @override
   void initState() {
     super.initState();
-    tz.initializeTimeZones(); // Zaman dilimini başlat
+    tz.initializeTimeZones();
   }
 
   Future<void> scheduleNotification(
@@ -43,7 +43,6 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
     final notificationId =
         DateTime.now().millisecondsSinceEpoch.remainder(100000);
 
-    var androidScheduleMode = null;
     await flutterLocalNotificationsPlugin.zonedSchedule(
       notificationId,
       title,
@@ -53,8 +52,23 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
-      androidScheduleMode: androidScheduleMode,
+      androidScheduleMode: AndroidScheduleMode.exact,
     );
+  }
+
+  Future<void> scheduleRepeatingNotifications(String title, String body,
+      DateTime startDate, TimeOfDay time, int frequency) async {
+    for (int i = 0; i < frequency; i++) {
+      final scheduledTime = DateTime(
+        startDate.year,
+        startDate.month,
+        startDate.day,
+        time.hour,
+        time.minute,
+      ).add(Duration(hours: i * 24 ~/ frequency));
+      print('Notification scheduled with title: $_nameController.text');
+      await scheduleNotification(title, body, scheduledTime);
+    }
   }
 
   @override
@@ -120,9 +134,8 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    iconSize: 30, // İkonun boyutunu artırdık
-                    icon: Icon(Icons.remove,
-                        size: 30), // İkonun boyutunu artırdık
+                    iconSize: 30,
+                    icon: Icon(Icons.remove, size: 30),
                     onPressed: () {
                       if (_frequency > 1) {
                         setState(() {
@@ -131,28 +144,26 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                       }
                     },
                   ),
-                  SizedBox(width: 8), // Araya boşluk ekledik
+                  SizedBox(width: 8),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Günlük Alım Sayısı', // Başlık yazısını ekledik
+                        'Günlük Alım Sayısı',
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        '$_frequency', // Sayı yazısı
+                        '$_frequency',
                         style: TextStyle(
-                            fontSize: 20,
-                            fontWeight:
-                                FontWeight.bold), // Sayının stilini ayarladık
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  SizedBox(width: 8), // Araya boşluk ekledik
+                  SizedBox(width: 8),
                   IconButton(
-                    iconSize: 30, // İkonun boyutunu artırdık
-                    icon: Icon(Icons.add, size: 30), // İkonun boyutunu artırdık
+                    iconSize: 30,
+                    icon: Icon(Icons.add, size: 30),
                     onPressed: () {
                       setState(() {
                         _frequency++;
@@ -179,6 +190,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     }
 
                     final medicine = Medicine(
+                      id: 0,
                       name: _nameController.text,
                       dosage: _dosageController.text,
                       startDate: _startDate!,
@@ -188,8 +200,18 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
 
                     await DatabaseHelper.instance.insertMedicine(medicine);
 
+                    await scheduleRepeatingNotifications(
+                      _nameController.text,
+                      'İlacınızı almayı unutmayın.',
+                      _startDate!,
+                      _time!,
+                      _frequency,
+                    );
+
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('İlaç kaydedildi!')),
+                      SnackBar(
+                          content: Text(
+                              'İlaç kaydedildi ve bildirimler ayarlandı!')),
                     );
 
                     Navigator.pop(context);

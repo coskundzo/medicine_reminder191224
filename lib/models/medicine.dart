@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Medicine {
-  final int?
+  final int
       id; // id, opsiyonel çünkü yeni bir kayıt oluşturulurken id veritabanı tarafından atanabilir.
   final String name;
   final String dosage;
@@ -10,7 +10,7 @@ class Medicine {
   final int frequency; // Günlük kaç kez alınacak
 
   Medicine({
-    this.id,
+    required this.id,
     required this.name,
     required this.dosage,
     required this.startDate,

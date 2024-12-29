@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Medicine {
+  final int id;
+
   final String name;
   final String dosage;
   final DateTime startDate;
@@ -8,6 +10,7 @@ class Medicine {
   final int frequency; // Günlük kaç kez alınacak
 
   Medicine({
+    required this.id,
     required this.name,
     required this.dosage,
     required this.startDate,
@@ -26,6 +29,7 @@ class Medicine {
   factory Medicine.fromJson(Map<String, dynamic> json) {
     final timeParts = (json['time'] as String).split(':');
     return Medicine(
+      id: json['id'],
       name: json['name'],
       dosage: json['dosage'],
       startDate: DateTime.parse(json['startDate']),
@@ -51,6 +55,7 @@ class Medicine {
   factory Medicine.fromMap(Map<String, dynamic> map) {
     final timeParts = map['time'].split(':');
     return Medicine(
+      id: map['id'] ?? 0, // id bilgisi burada alınıyor
       name: map['name'],
       dosage: map['dosage'],
       startDate: DateTime.parse(map['startDate']),

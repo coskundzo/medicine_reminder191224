@@ -1,11 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-import 'medicine_list_screen.dart';
-import 'add_medicine_screen.dart';
-import 'notification_helper.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
+import 'medicine_list_screen.dart';
 
 class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -58,64 +54,5 @@ class NotificationHelper {
   // Bildirim iptali
   static Future<void> cancelNotification(int id) async {
     await _notificationsPlugin.cancel(id);
-  }
-}
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await NotificationHelper.initialize();
-  runApp(MyApp());
-}
-
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Ana Sayfa'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/addMedicine');
-              },
-              child: Text('İlaç Ekle'),
-            ),
-            SizedBox(height: 20), // Butonlar arasında boşluk
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/medicines');
-              },
-              child: Text('İlaç Listesine Git'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/_medicines');
-              },
-              child: Text('İlaç Listesine Git/detay'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'İlaç Hatırlatma',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => HomeScreen(),
-        '/addMedicine': (context) => AddMedicineScreen(),
-        '/medicines': (context) => MedicineListScreen(),
-        '/_medicines': (context) => MedicineListScreen(), // Yeni rota tanımlama
-      },
-    );
   }
 }
