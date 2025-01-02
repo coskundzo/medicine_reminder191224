@@ -86,6 +86,8 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
   }
 
   void _editMedicine(Medicine medicine) {
+    //_loadMedicines();
+    //setState(() {});
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -93,8 +95,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
       ),
     );
     // Düzenleme ekranına yönlendirme veya işlem
-    _loadMedicines();
-    setState(() {});
+
     print("İlaç düzenle: ${medicine.name}");
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'db/medicine.dart';
 import 'database_helper.dart';
+
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -220,6 +221,8 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     } else {
                       // Mevcut ilacı güncelleme
                       await DatabaseHelper.instance.updateMedicine(medicine);
+
+                      setState(() {});
                     }
 
                     await scheduleRepeatingNotifications(
@@ -238,6 +241,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     );
 
                     Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/medicines');
                   }
                 },
                 child: Text('Kaydet'),
