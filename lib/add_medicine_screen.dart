@@ -89,7 +89,9 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('İlaç Ekle')),
+      appBar: AppBar(
+        title: Text(widget.medicine == null ? 'İlaç Ekle' : 'İlaç Düzenle'),
+      ),
       body: Form(
         key: _formKey,
         child: Padding(

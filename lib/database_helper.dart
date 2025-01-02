@@ -56,12 +56,12 @@ class DatabaseHelper {
   }
 
   Future<int> updateMedicine(Medicine medicine) async {
-    final db = await database;
+    final db = await instance.database;
     return await db.update(
       'medicines',
       medicine.toMap(),
       where: 'id = ?',
-      whereArgs: [medicine.toMap()['id']],
+      whereArgs: [medicine.id],
     );
   }
 }

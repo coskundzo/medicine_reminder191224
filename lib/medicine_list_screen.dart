@@ -93,6 +93,8 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
       ),
     );
     // Düzenleme ekranına yönlendirme veya işlem
+    _loadMedicines();
+    setState(() {});
     print("İlaç düzenle: ${medicine.name}");
   }
 
