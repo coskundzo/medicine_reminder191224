@@ -6,14 +6,19 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class AddMedicineScreen extends StatefulWidget {
+  //---------------------------------
+  final Medicine? medicine; // Düzenleme için opsiyonel parametre
+
+  AddMedicineScreen({this.medicine});
+  //---------------------------------
   @override
   _AddMedicineScreenState createState() => _AddMedicineScreenState();
 }
 
 class _AddMedicineScreenState extends State<AddMedicineScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _dosageController = TextEditingController();
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _dosageController = TextEditingController();
   DateTime? _startDate;
   TimeOfDay? _time;
   int _frequency = 1;
@@ -25,6 +30,16 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   void initState() {
     super.initState();
     tz.initializeTimeZones();
+    // Form alanlarını düzenleme modunda doldur
+    _nameController = TextEditingController(
+      text: widget.medicine?.name ?? '',
+    );
+    _dosageController = TextEditingController(
+      text: widget.medicine?.dosage ?? '',
+    );
+    _startDate = widget.medicine?.startDate;
+    _time = widget.medicine?.time;
+    _frequency = widget.medicine?.frequency ?? 1;
   }
 
   Future<void> scheduleNotification(
@@ -190,15 +205,20 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     }
 
                     final medicine = Medicine(
-                      id: 0,
+                      id: widget.medicine?.id ?? 0,
                       name: _nameController.text,
                       dosage: _dosageController.text,
                       startDate: _startDate!,
                       time: _time!,
                       frequency: _frequency,
                     );
-
-                    await DatabaseHelper.instance.insertMedicine(medicine);
+                    if (widget.medicine == null) {
+                      // Yeni ilaç ekleme
+                      await DatabaseHelper.instance.insertMedicine(medicine);
+                    } else {
+                      // Mevcut ilacı güncelleme
+                      await DatabaseHelper.instance.updateMedicine(medicine);
+                    }
 
                     await scheduleRepeatingNotifications(
                       _nameController.text,
@@ -210,8 +230,9 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(
-                              'İlaç kaydedildi ve bildirimler ayarlandı!')),
+                          content: Text(widget.medicine == null
+                              ? 'İlaç kaydedildi ve bildirimler ayarlandı!'
+                              : 'İlaç güncellendi ve bildirimler yeniden ayarlandı!')),
                     );
 
                     Navigator.pop(context);

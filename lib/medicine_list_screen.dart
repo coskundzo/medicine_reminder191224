@@ -5,6 +5,7 @@ import 'database_helper.dart'; // Veritabanı işlemleri için
 import 'notification_helper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
+import 'add_medicine_screen.dart';
 
 class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -85,6 +86,12 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
   }
 
   void _editMedicine(Medicine medicine) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMedicineScreen(medicine: medicine),
+      ),
+    );
     // Düzenleme ekranına yönlendirme veya işlem
     print("İlaç düzenle: ${medicine.name}");
   }
