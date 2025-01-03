@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:medicine_reminder191224/show_custom_sanckbar.dart';
 import 'db/medicine.dart'; // Medicine modelini import ettiniz
 import 'database_helper.dart'; // Veritabanı işlemleri için
 import 'notification_helper.dart';
@@ -173,11 +174,10 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                             setState(() {
                               medicines.remove(medicine); // Listeyi güncelle
                             });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      '${medicine.name} başarıyla silindi.')),
-                            );
+                            showCustomSnackBar(
+                                context,
+                                '${medicine.name} başarıyla silindi.',
+                                Colors.green);
                           }
                         },
                       ),

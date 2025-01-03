@@ -29,7 +29,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE medicines (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        name TEXT NOT UNIQUE,
         dosage TEXT,
         startDate TEXT NOT NULL,
         time TEXT NOT NULL,
@@ -63,5 +63,15 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [medicine.id],
     );
+  }
+
+  Future<bool> isMedicineNameExists(String name) async {
+    final db = await database;
+    final result = await db.query(
+      'medicines',
+      where: 'name = ?',
+      whereArgs: [name],
+    );
+    return result.isNotEmpty;
   }
 }

@@ -5,6 +5,7 @@ import 'database_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'show_custom_sanckbar.dart';
 
 class AddMedicineScreen extends StatefulWidget {
   //---------------------------------
@@ -55,7 +56,8 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
     );
     const platformDetails = NotificationDetails(android: androidDetails);
 
-    final tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
+    final tzScheduledTime =
+        tz.TZDateTime.from(scheduledTime, tz.getLocation('Europe/Istanbul'));
     final notificationId =
         DateTime.now().millisecondsSinceEpoch.remainder(100000);
 
@@ -82,7 +84,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
         time.hour,
         time.minute,
       ).add(Duration(hours: i * 24 ~/ frequency));
-      print('Notification scheduled with title: $_nameController.text');
+      print('Notification scheduled with title: ${_nameController.text}');
       await scheduleNotification(title, body, scheduledTime);
     }
   }
@@ -200,6 +202,13 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                       );
                       return;
                     }
+                    final isExists = await DatabaseHelper.instance
+                        .isMedicineNameExists(_nameController.text);
+                    if (isExists) {
+                      showCustomSnackBar(context,
+                          'Bu isimde bir ilaç zaten kayıtlı!', Colors.red);
+                      return; // Kaydetme işlemini durdur // Kaydetme işlemini durdur
+                    }
                     if (_time == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Lütfen zamanı seçin.')),
@@ -221,13 +230,13 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     } else {
                       // Mevcut ilacı güncelleme
                       await DatabaseHelper.instance.updateMedicine(medicine);
-
-                      setState(() {});
                     }
+                    final String title = _nameController.text;
+                    final String body = 'İlacınızı almayı unutmayın.';
 
                     await scheduleRepeatingNotifications(
-                      _nameController.text,
-                      'İlacınızı almayı unutmayın.',
+                      title,
+                      body,
                       _startDate!,
                       _time!,
                       _frequency,
@@ -240,7 +249,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                               : 'İlaç güncellendi ve bildirimler yeniden ayarlandı!')),
                     );
 
-                    Navigator.pop(context);
+                    //Navigator.pop(context);
                     Navigator.pushReplacementNamed(context, '/medicines');
                   }
                 },

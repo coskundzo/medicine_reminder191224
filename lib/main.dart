@@ -3,7 +3,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'medicine_list_screen.dart';
 import 'add_medicine_screen.dart';
-import 'notification_helper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 
