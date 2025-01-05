@@ -210,88 +210,116 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Kayıtlı İlaçlar')),
-      body: FutureBuilder<List<Medicine>>(
-        future: _medicines,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Hata: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Hiç ilaç kaydedilmedi.'));
-          } else {
-            final medicines = snapshot.data!;
-            return ListView.builder(
-              itemCount: medicines.length,
-              itemBuilder: (context, index) {
-                final medicine = medicines[index];
-                return ListTile(
-                  title: Text(medicine.name),
-                  subtitle: Text(
-                      'Dozaj: ${medicine.dosage}, Günde ${medicine.frequency} defa,: ${medicine.time.format(context)}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => _editMedicine(medicine),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.notifications_off,
-                          color: medicine.isNotificationActive
-                              ? const Color.fromARGB(255, 161, 246, 50)
-                              : const Color.fromARGB(255, 241, 86, 43),
-                        ),
-                        onPressed: () => _toggleNotification(medicine),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () async {
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text('Silme Onayı'),
-                                content: Text(
-                                    '${medicine.name} isimli ilacı silmek istediğinizden emin misiniz?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false), // İptal
-                                    child: Text('İptal'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, true), // Onay
-                                    child: Text('Sil'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
+      body: Column(
+        children: [
+          Expanded(
+            child: FutureBuilder<List<Medicine>>(
+              future: _medicines,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Hata: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('Hiç ilaç kaydedilmedi.'));
+                } else {
+                  final medicines = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: medicines.length,
+                    itemBuilder: (context, index) {
+                      final medicine = medicines[index];
+                      return ListTile(
+                        title: Text(medicine.name),
+                        subtitle: Text(
+                            'Dozaj: ${medicine.dosage}, Günde ${medicine.frequency} defa,: ${medicine.time.format(context)}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => _editMedicine(medicine),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.notifications_off,
+                                color: medicine.isNotificationActive
+                                    ? const Color.fromARGB(255, 161, 246, 50)
+                                    : const Color.fromARGB(255, 241, 86, 43),
+                              ),
+                              onPressed: () => _toggleNotification(medicine),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text('Silme Onayı'),
+                                      content: Text(
+                                          '${medicine.name} isimli ilacı silmek istediğinizden emin misiniz?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: Text('İptal'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: Text('Sil'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
 
-                          // Kullanıcı "Sil" butonuna tıkladıysa işlemi başlat
-                          if (confirm == true) {
-                            await DatabaseHelper.instance.deleteMedicine(
-                                medicine.id!); // Veritabanından sil
-                            setState(() {
-                              medicines.remove(medicine); // Listeyi güncelle
-                            });
-                            showCustomSnackBar(
-                                context,
-                                '${medicine.name} başarıyla silindi.',
-                                Colors.green);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
+                                if (confirm == true) {
+                                  for (int notificationId
+                                      in medicine.notificationIds) {
+                                    await flutterLocalNotificationsPlugin
+                                        .cancel(notificationId);
+                                  }
+
+                                  await DatabaseHelper.instance
+                                      .deleteMedicine(medicine.id!);
+
+                                  setState(() {
+                                    medicines.remove(medicine);
+                                  });
+
+                                  showCustomSnackBar(
+                                    context,
+                                    '${medicine.name} başarıyla silindi. Ve bildirimleri de kapatıldı',
+                                    Colors.green,
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: () async {
+                await flutterLocalNotificationsPlugin.cancelAll();
+                showCustomSnackBar(
+                  context,
+                  'Tüm bildirimler iptal edildi.',
+                  Colors.red,
                 );
               },
-            );
-          }
-        },
+              child: Text('Tüm Bildirimleri İptal Et.'),
+            ),
+          ),
+        ],
       ),
     );
   }
