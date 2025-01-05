@@ -20,27 +20,44 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade, // Yeni bir yükseltme metodu ekliyoruz
     );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Yeni sütunları eklemek için ALTER TABLE komutları
+      await db.execute(
+          'ALTER TABLE medicines ADD COLUMN isNotificationActive INTEGER DEFAULT 1');
+      await db.execute('ALTER TABLE medicines ADD COLUMN notificationIds TEXT');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE medicines (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT UNIQUE,
+        name TEXT NOT NULL,
         dosage TEXT,
         startDate TEXT NOT NULL,
         time TEXT NOT NULL,
-        frequency INTEGER NOT NULL
+        frequency INTEGER NOT NULL,
+        isNotificationActive INTEGER, -- Varsayılan aktif
+        notificationIds TEXT -- Virgülle ayrılmış string
       )
     ''');
   }
 
   Future<int> insertMedicine(Medicine medicine) async {
     final db = await database;
-    return await db.insert('medicines', medicine.toMap());
+    try {
+      return await db.insert('medicines', medicine.toMap());
+    } catch (e) {
+      print('Insert error: $e'); // Hata mesajını loglayın
+      return -1; // Hata durumunda negatif değer döndür
+    }
   }
 
   Future<List<Medicine>> getMedicines() async {

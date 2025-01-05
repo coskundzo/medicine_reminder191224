@@ -87,6 +87,12 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
       print('Notification scheduled with title: ${_nameController.text}');
       await scheduleNotification(title, body, scheduledTime);
     }
+    if (_time == null || _startDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Başlangıç tarihi ve zamanı seçilmelidir.')),
+      );
+      return;
+    }
   }
 
   @override
@@ -204,33 +210,47 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     }
                     final isExists = await DatabaseHelper.instance
                         .isMedicineNameExists(_nameController.text);
-                    if (isExists) {
+                    print('Is Exists: $isExists');
+
+                    if (isExists && widget.medicine == null) {
+                      // Yeni ilaç ekliyorsanız ve isim zaten varsa kaydetme
                       showCustomSnackBar(context,
                           'Bu isimde bir ilaç zaten kayıtlı!', Colors.red);
-                      return; // Kaydetme işlemini durdur // Kaydetme işlemini durdur
-                    }
-                    if (_time == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Lütfen zamanı seçin.')),
-                      );
+                      return;
+                    } else if (isExists &&
+                        widget.medicine != null &&
+                        widget.medicine!.name != _nameController.text) {
+                      // Güncelleme yaparken isim farklı bir ilaçla çakışıyorsa
+                      showCustomSnackBar(context,
+                          'Bu isimde bir ilaç zaten kayıtlı!', Colors.red);
                       return;
                     }
 
                     final medicine = Medicine(
-                      id: widget.medicine?.id ?? 0,
+                      id: widget.medicine?.id,
                       name: _nameController.text,
                       dosage: _dosageController.text,
                       startDate: _startDate!,
                       time: _time!,
                       frequency: _frequency,
+                      isNotificationActive: true, // Yeni alan
+                      notificationIds: [],
                     );
                     if (widget.medicine == null) {
                       // Yeni ilaç ekleme
-                      await DatabaseHelper.instance.insertMedicine(medicine);
+                      int id = await DatabaseHelper.instance
+                          .insertMedicine(medicine);
+                      print('inserted medicine id: $id');
+                      print('Medicine Name: ${_nameController.text}');
                     } else {
                       // Mevcut ilacı güncelleme
+                      print(
+                          'Updating medicine with id: ${widget.medicine?.id}');
+                      print('Updated Medicine Name: ${_nameController.text}');
                       await DatabaseHelper.instance.updateMedicine(medicine);
+                      print('Medicine updated');
                     }
+
                     final String title = _nameController.text;
                     final String body = 'İlacınızı almayı unutmayın.';
 

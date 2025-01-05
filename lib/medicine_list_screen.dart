@@ -8,6 +8,61 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'add_medicine_screen.dart';
 
+final _formKey = GlobalKey<FormState>();
+TextEditingController _nameController = TextEditingController();
+TextEditingController _dosageController = TextEditingController();
+DateTime? _startDate;
+TimeOfDay? _time;
+int _frequency = 1;
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> scheduleNotification(
+    String title, String body, DateTime scheduledTime) async {
+  const androidDetails = AndroidNotificationDetails(
+    'med_reminder_channel_id',
+    'Med Reminders',
+    channelDescription: 'Channel for medication reminders',
+    importance: Importance.high,
+    priority: Priority.high,
+    icon: '@mipmap/ic_launcher',
+  );
+  const platformDetails = NotificationDetails(android: androidDetails);
+
+  final tzScheduledTime =
+      tz.TZDateTime.from(scheduledTime, tz.getLocation('Europe/Istanbul'));
+  final notificationId =
+      DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+  await flutterLocalNotificationsPlugin.zonedSchedule(
+    notificationId,
+    title,
+    body,
+    tzScheduledTime,
+    platformDetails,
+    uiLocalNotificationDateInterpretation:
+        UILocalNotificationDateInterpretation.absoluteTime,
+    matchDateTimeComponents: DateTimeComponents.time,
+    androidScheduleMode: AndroidScheduleMode.exact,
+  );
+}
+
+Future<void> scheduleRepeatingNotifications(String title, String body,
+    DateTime startDate, TimeOfDay time, int frequency) async {
+  for (int i = 0; i < frequency; i++) {
+    final scheduledTime = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+      time.hour,
+      time.minute,
+    ).add(Duration(hours: i * 24 ~/ frequency));
+    print('Notification scheduled with title: ${_nameController.text}');
+    await scheduleNotification(title, body, scheduledTime);
+  }
+}
+
 class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -55,11 +110,6 @@ class NotificationHelper {
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
-
-  // Bildirim iptali
-  static Future<void> cancelNotification(int id) async {
-    await _notificationsPlugin.cancel(id);
-  }
 }
 
 class MedicineListScreen extends StatefulWidget {
@@ -100,10 +150,60 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     print("İlaç düzenle: ${medicine.name}");
   }
 
-  void _toggleNotification(Medicine medicine) async {
-    await NotificationHelper.cancelNotification(medicine.id);
-    // Bildirim durumunu değiştirme (örneğin, veritabanında güncelleme)
-    print("Bildirim kapat: ${medicine.name}");
+  Future<void> _toggleNotification(Medicine medicine) async {
+    if (medicine.isNotificationActive) {
+      // Bildirimleri iptal et
+      for (int notificationId in medicine.notificationIds) {
+        await flutterLocalNotificationsPlugin.cancel(notificationId);
+        print('bildirimler iptal edildi');
+      }
+      medicine.notificationIds.clear(); // Bildirim ID'lerini temizle
+
+      setState(() {
+        medicine.isNotificationActive = false;
+      });
+
+      // Kullanıcıya bildirim
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${medicine.name} bildirimleri kapatıldı.')),
+      );
+    } else {
+      // Bildirimleri yeniden zamanla
+      final notificationIds = <int>[];
+      for (int i = 0; i < medicine.frequency; i++) {
+        final scheduledTime = DateTime(
+          medicine.startDate.year,
+          medicine.startDate.month,
+          medicine.startDate.day,
+          medicine.time.hour,
+          medicine.time.minute,
+        ).add(Duration(hours: i * 24 ~/ medicine.frequency));
+
+        final notificationId =
+            DateTime.now().millisecondsSinceEpoch.remainder(100000);
+        await scheduleNotification(
+          medicine.name,
+          'İlacınızı almayı unutmayın.',
+          scheduledTime,
+        );
+        notificationIds.add(notificationId);
+      }
+
+      medicine.notificationIds = notificationIds;
+
+      setState(() {
+        medicine.isNotificationActive = true;
+      });
+
+      // Kullanıcıya bildirim
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('${medicine.name} bildirimleri etkinleştirildi.')),
+      );
+    }
+
+    // Güncel durumu veritabanına kaydet
+    await DatabaseHelper.instance.updateMedicine(medicine);
   }
 
   @override
@@ -137,8 +237,12 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                         onPressed: () => _editMedicine(medicine),
                       ),
                       IconButton(
-                        icon:
-                            Icon(Icons.notifications_off, color: Colors.orange),
+                        icon: Icon(
+                          Icons.notifications_off,
+                          color: medicine.isNotificationActive
+                              ? const Color.fromARGB(255, 161, 246, 50)
+                              : const Color.fromARGB(255, 241, 86, 43),
+                        ),
                         onPressed: () => _toggleNotification(medicine),
                       ),
                       IconButton(
@@ -170,7 +274,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                           // Kullanıcı "Sil" butonuna tıkladıysa işlemi başlat
                           if (confirm == true) {
                             await DatabaseHelper.instance.deleteMedicine(
-                                medicine.id); // Veritabanından sil
+                                medicine.id!); // Veritabanından sil
                             setState(() {
                               medicines.remove(medicine); // Listeyi güncelle
                             });
