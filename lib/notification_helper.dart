@@ -1,7 +1,10 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:medicine_reminder191224/main.dart';
+import 'package:medicine_reminder191224/medicine_list_screen.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
-import 'medicine_list_screen.dart';
+import '../screens/floating_screen.dart' as floating_screen;
+import 'package:flutter/material.dart';
 
 class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -17,7 +20,26 @@ class NotificationHelper {
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
 
-    await _notificationsPlugin.initialize(initializationSettings);
+    await _notificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        print('Bildirim Aksiyonu Alındı: ${response.actionId}');
+        if (response.actionId == 'Ertele') {
+          print('Ertele aksiyonu çalıştırılıyor.');
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => floating_screen.FloatingPage(),
+            ),
+          );
+        } else if (response.actionId == 'al') {
+          print('Al aksiyonu çalıştırılıyor.');
+          // Handle "Al" action here
+        } else if (response.actionId == 'iptal') {
+          print('İptal aksiyonu çalıştırılıyor.');
+          // Handle "İptal" action here
+        }
+      },
+    );
   }
 
   // Bildirim zamanlama fonksiyonu
@@ -34,6 +56,11 @@ class NotificationHelper {
         channelDescription: 'İlaç hatırlatıcı bildirimleri için kanal',
         importance: Importance.max,
         priority: Priority.high,
+        actions: <AndroidNotificationAction>[
+          AndroidNotificationAction('ertele', 'Ertele'),
+          AndroidNotificationAction('al', 'Al'),
+          AndroidNotificationAction('iptal', 'İptal Et'),
+        ],
       ),
     );
 
@@ -52,7 +79,33 @@ class NotificationHelper {
   }
 
   // Bildirim iptali
-  static Future<void> cancelNotification(int id) async {
-    await _notificationsPlugin.cancel(id);
+  static Future<void> cancelNotification(int notificationId) async {
+    await _notificationsPlugin.cancel(notificationId);
   }
+}
+
+void showNotification(int id, String title, String body) async {
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'channel_id', // Kanal ID'si
+    'channel_name', // Kanal Adı
+    channelDescription: 'Kanal açıklaması',
+    importance: Importance.max,
+    priority: Priority.high,
+    actions: <AndroidNotificationAction>[
+      AndroidNotificationAction('ertele', 'Ertele'),
+      AndroidNotificationAction('al', 'Al'),
+      AndroidNotificationAction('iptal', 'İptal Et'),
+    ],
+  );
+
+  const NotificationDetails platformDetails =
+      NotificationDetails(android: androidDetails);
+
+  await flutterLocalNotificationsPlugin.show(
+    id,
+    title,
+    body,
+    platformDetails,
+    payload: 'notification_payload', // Aksiyon verisi
+  );
 }

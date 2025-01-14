@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'notification_helper.dart';
 
 import 'medicine_list_screen.dart';
 import 'add_medicine_screen.dart';
@@ -66,6 +67,8 @@ void main() async {
   runApp(MyApp());
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -109,6 +112,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'İlaç Hatırlatma',
       initialRoute: '/',
+      navigatorKey: navigatorKey,
       routes: {
         '/': (context) => HomeScreen(),
         '/addMedicine': (context) => AddMedicineScreen(),

@@ -3,17 +3,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:medicine_reminder191224/show_custom_sanckbar.dart';
 import 'db/medicine.dart'; // Medicine modelini import ettiniz
 import 'database_helper.dart'; // Veritabanı işlemleri için
-import 'notification_helper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'add_medicine_screen.dart';
 
-final _formKey = GlobalKey<FormState>();
 TextEditingController _nameController = TextEditingController();
-TextEditingController _dosageController = TextEditingController();
-DateTime? _startDate;
-TimeOfDay? _time;
-int _frequency = 1;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -130,12 +124,6 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     _medicines = DatabaseHelper.instance.getMedicines();
   }
 
-  Future<void> _deleteMedicine(int id) async {
-    await DatabaseHelper.instance.deleteMedicine(id);
-    _loadMedicines();
-    setState(() {});
-  }
-
   void _editMedicine(Medicine medicine) {
     //_loadMedicines();
     //setState(() {});
@@ -150,12 +138,18 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     print("İlaç düzenle: ${medicine.name}");
   }
 
+  Future<void> cancelNotifications(List<int> notificationIds) async {
+    for (int id in notificationIds) {
+      await flutterLocalNotificationsPlugin.cancel(id);
+    }
+  }
+
   Future<void> _toggleNotification(Medicine medicine) async {
     if (medicine.isNotificationActive) {
       // Bildirimleri iptal et
       for (int notificationId in medicine.notificationIds) {
         await flutterLocalNotificationsPlugin.cancel(notificationId);
-        print('bildirimler iptal edildi');
+        print('Bildirim ID $notificationId iptal edildi');
       }
       medicine.notificationIds.clear(); // Bildirim ID'lerini temizle
 
@@ -165,7 +159,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
 
       // Kullanıcıya bildirim
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${medicine.name} bildirimleri kapatıldı.')),
+        SnackBar(content: Text('${medicine.name}  bildirimleri kapatıldı.')),
       );
     } else {
       // Bildirimleri yeniden zamanla

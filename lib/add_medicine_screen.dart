@@ -53,6 +53,11 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
+      actions: <AndroidNotificationAction>[
+        AndroidNotificationAction('snooze', 'Ertele'),
+        AndroidNotificationAction('take', 'Al'),
+        AndroidNotificationAction('cancel', 'İptal Et'),
+      ],
     );
     const platformDetails = NotificationDetails(android: androidDetails);
 
