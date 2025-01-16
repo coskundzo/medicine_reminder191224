@@ -1,10 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:medicine_reminder191224/main.dart';
 import 'package:medicine_reminder191224/medicine_list_screen.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
-import '../screens/floating_screen.dart' as floating_screen;
-import 'package:flutter/material.dart';
 
 class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -39,11 +36,6 @@ class NotificationHelper {
         channelDescription: 'İlaç hatırlatıcı bildirimleri için kanal',
         importance: Importance.max,
         priority: Priority.high,
-        actions: <AndroidNotificationAction>[
-          AndroidNotificationAction('ertele', 'Ertele'),
-          AndroidNotificationAction('al', 'Al'),
-          AndroidNotificationAction('iptal', 'İptal Et'),
-        ],
       ),
     );
 
@@ -74,11 +66,6 @@ void showNotification(int id, String title, String body) async {
     channelDescription: 'Kanal açıklaması',
     importance: Importance.max,
     priority: Priority.high,
-    actions: <AndroidNotificationAction>[
-      AndroidNotificationAction('ertele', 'Ertele'),
-      AndroidNotificationAction('al', 'Al'),
-      AndroidNotificationAction('iptal', 'İptal Et'),
-    ],
   );
 
   const NotificationDetails platformDetails =

@@ -99,6 +99,17 @@ class HomeScreen extends StatelessWidget {
               },
               child: Text('İlaç Listesine Git/detay'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return floating_screen.FloatingPage();
+                  },
+                );
+              },
+              child: Text('bildirim sayfası'),
+            ),
           ],
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'show_custom_sanckbar.dart';
+import '../screens/floating_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -41,10 +42,19 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
 
     flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        if (response.actionId == 'snooze') {
+      onDidReceiveNotificationResponse:
+          (NotificationResponse notificationResponse) async {
+        final String? payload = notificationResponse.payload;
+        if (notificationResponse.actionId == 'snooze') {
+          if (payload != null) {
+            debugPrint('Notification payload: $payload');
+
+            // Bildirime tıklanınca FloatingPage sayfasına yönlendir
+            navigatorKey.currentState?.push(
+              MaterialPageRoute(builder: (_) => FloatingPage()),
+            );
+          }
           print('Snooze action clicked');
-          navigatorKey.currentState?.pushReplacementNamed('/floating_screen');
         }
       },
     );
@@ -291,6 +301,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                               ? 'İlaç kaydedildi ve bildirimler ayarlandı!'
                               : 'İlaç güncellendi ve bildirimler yeniden ayarlandı!')),
                     );
+                    Navigator.of(context).pop();
 
                     //Navigator.pop(context);
                     Navigator.pushReplacementNamed(context, '/medicines');
