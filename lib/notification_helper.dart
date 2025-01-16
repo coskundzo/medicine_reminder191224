@@ -22,23 +22,6 @@ class NotificationHelper {
 
     await _notificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        print('Bildirim Aksiyonu Alındı: ${response.actionId}');
-        if (response.actionId == 'Ertele') {
-          print('Ertele aksiyonu çalıştırılıyor.');
-          navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (context) => floating_screen.FloatingPage(),
-            ),
-          );
-        } else if (response.actionId == 'al') {
-          print('Al aksiyonu çalıştırılıyor.');
-          // Handle "Al" action here
-        } else if (response.actionId == 'iptal') {
-          print('İptal aksiyonu çalıştırılıyor.');
-          // Handle "İptal" action here
-        }
-      },
     );
   }
 

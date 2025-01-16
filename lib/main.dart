@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'notification_helper.dart';
 
 import 'medicine_list_screen.dart';
 import 'add_medicine_screen.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
+import '../screens/floating_screen.dart' as floating_screen;
 
 class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -117,7 +117,9 @@ class MyApp extends StatelessWidget {
         '/': (context) => HomeScreen(),
         '/addMedicine': (context) => AddMedicineScreen(),
         '/medicines': (context) => MedicineListScreen(),
-        '/_medicines': (context) => MedicineListScreen(), // Yeni rota tanımlama
+        '/_medicines': (context) => MedicineListScreen(),
+        '/floating_screen': (context) =>
+            floating_screen.FloatingPage(), // Yeni rota tanımlama
       },
     );
   }

@@ -7,6 +7,8 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'show_custom_sanckbar.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class AddMedicineScreen extends StatefulWidget {
   //---------------------------------
   final Medicine? medicine; // Düzenleme için opsiyonel parametre
@@ -32,6 +34,21 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   void initState() {
     super.initState();
     tz.initializeTimeZones();
+    const initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    final initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+
+    flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        if (response.actionId == 'snooze') {
+          print('Snooze action clicked');
+          navigatorKey.currentState?.pushReplacementNamed('/floating_screen');
+        }
+      },
+    );
+
     // Form alanlarını düzenleme modunda doldur
     _nameController = TextEditingController(
       text: widget.medicine?.name ?? '',
@@ -54,11 +71,12 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
       actions: <AndroidNotificationAction>[
-        AndroidNotificationAction('snooze', 'Ertele'),
+        AndroidNotificationAction('snooze', 'Erteleee'),
         AndroidNotificationAction('take', 'Al'),
         AndroidNotificationAction('cancel', 'İptal Et'),
       ],
     );
+
     const platformDetails = NotificationDetails(android: androidDetails);
 
     final tzScheduledTime =
