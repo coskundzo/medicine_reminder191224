@@ -58,8 +58,13 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
             );
           } else if (response.actionId == 'cancel') {
             print('İptal aksiyonu çalıştırılıyor.');
-            showCustomSnackBar(navigatorKey.currentContext!,
-                'Bildirim iptal edildi!', Colors.red);
+            ScaffoldMessenger.of(navigatorKey.currentState!.context)
+                .showSnackBar(
+              SnackBar(
+                content: Text('Bildirim iptal edildi'),
+                backgroundColor: Colors.green,
+              ),
+            );
           }
         } else {
           print('response.actionId null.');
