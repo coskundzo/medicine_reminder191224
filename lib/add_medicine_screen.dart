@@ -7,8 +7,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'show_custom_sanckbar.dart';
 import '../screens/floating_screen.dart';
-
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+import 'main.dart';
 
 class AddMedicineScreen extends StatefulWidget {
   //---------------------------------
@@ -42,19 +41,28 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
 
     flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse:
-          (NotificationResponse notificationResponse) async {
-        final String? payload = notificationResponse.payload;
-        if (notificationResponse.actionId == 'snooze') {
-          if (payload != null) {
-            debugPrint('Notification payload: $payload');
-
-            // Bildirime tıklanınca FloatingPage sayfasına yönlendir
-            navigatorKey.currentState?.push(
-              MaterialPageRoute(builder: (_) => FloatingPage()),
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        print('Bildirim Aksiyonu Alındı: ${response.actionId}');
+        if (response.actionId != null) {
+          if (response.actionId == 'snooze') {
+            print('Erteleme aksiyonu çalıştırılıyor.');
+            navigatorKey.currentState?.pushReplacementNamed('/floating_screen');
+          } else if (response.actionId == 'take') {
+            print('Al aksiyonu çalıştırılıyor.');
+            ScaffoldMessenger.of(navigatorKey.currentState!.context)
+                .showSnackBar(
+              SnackBar(
+                content: Text('İlacınız alındı!'),
+                backgroundColor: Colors.green,
+              ),
             );
+          } else if (response.actionId == 'cancel') {
+            print('İptal aksiyonu çalıştırılıyor.');
+            showCustomSnackBar(navigatorKey.currentContext!,
+                'Bildirim iptal edildi!', Colors.red);
           }
-          print('Snooze action clicked');
+        } else {
+          print('response.actionId null.');
         }
       },
     );
@@ -80,10 +88,23 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
+      autoCancel: false,
       actions: <AndroidNotificationAction>[
-        AndroidNotificationAction('snooze', 'Erteleee'),
-        AndroidNotificationAction('take', 'Al'),
-        AndroidNotificationAction('cancel', 'İptal Et'),
+        AndroidNotificationAction(
+          'snooze',
+          'Erteleee',
+          showsUserInterface: true,
+        ),
+        AndroidNotificationAction(
+          'take',
+          'Al',
+          showsUserInterface: true,
+        ),
+        AndroidNotificationAction(
+          'cancel',
+          'İptal Et',
+          showsUserInterface: true,
+        ),
       ],
     );
 
