@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1055922543089",
+    "project_id": "reminderlogin-ae2a4",
+    "storage_bucket": "reminderlogin-ae2a4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055922543089:android:ec1110a07b6daeaf660c50",
+        "android_client_info": {
+          "package_name": "com.example.medicine_reminder191224"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC113p2QdrAOsK6OANGOpKwDkLbjuNdFIU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

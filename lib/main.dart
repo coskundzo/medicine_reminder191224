@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'medicine_list_screen.dart';
 import 'add_medicine_screen.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -58,6 +58,7 @@ class NotificationHelper {
   // Bildirim iptali
   static Future<void> cancelNotification(int id) async {
     await _notificationsPlugin.cancel(id);
+    await Firebase.initializeApp();
   }
 }
 
