@@ -147,3 +147,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+//firebase ve login sayfaları eklendi
