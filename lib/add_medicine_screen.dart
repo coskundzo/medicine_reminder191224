@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicine_reminder191224/screens/floating_screen.dart';
 import 'db/medicine.dart';
 import 'database_helper.dart';
 
@@ -45,7 +46,28 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
         if (response.actionId != null) {
           if (response.actionId == 'snooze') {
             print('Erteleme aksiyonu çalıştırılıyor.');
-            navigatorKey.currentState?.pushReplacementNamed('/floating_screen');
+            showGeneralDialog(
+              context: navigatorKey.currentState!.context,
+              barrierDismissible: true,
+              barrierLabel: "Dialog",
+              pageBuilder: (_, __, ___) {
+                return Center(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      width: 300,
+                      height: 200,
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: FloatingPage(),
+                    ),
+                  ),
+                );
+              },
+            );
           } else if (response.actionId == 'take') {
             print('Al aksiyonu çalıştırılıyor.');
             ScaffoldMessenger.of(navigatorKey.currentState!.context)
