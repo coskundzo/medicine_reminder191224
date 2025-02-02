@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:medicine_reminder191224/auth/views/sign_in.dart';
 import 'medicine_list_screen.dart';
 import 'add_medicine_screen.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -58,13 +59,13 @@ class NotificationHelper {
   // Bildirim iptali
   static Future<void> cancelNotification(int id) async {
     await _notificationsPlugin.cancel(id);
-    await Firebase.initializeApp();
   }
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationHelper.initialize();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -111,6 +112,15 @@ class HomeScreen extends StatelessWidget {
               },
               child: Text('bildirim sayfası'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SignIn()),
+                );
+              },
+              child: Text('signin'),
+            ),
           ],
         ),
       ),
@@ -132,6 +142,7 @@ class MyApp extends StatelessWidget {
         '/_medicines': (context) => MedicineListScreen(),
         '/floating_screen': (context) =>
             floating_screen.FloatingPage(), // Yeni rota tanımlama
+        '/signin': (context) => SignIn(),
       },
     );
   }
